@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LiveVox Dynamic Unit Mapping Rule Builder</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LiveVox Dynamic Unit Mapping</h1>
+            <p class="subtitle">Configure unit mapping rules based on call/agent metadata</p>
+        </header>
+
+        <div class="main-content">
+            <!-- Example Metadata Panel -->
+            <div class="panel">
+                <h2>Example Metadata</h2>
+                <p class="help-text">Sample LiveVox call/agent metadata for testing rules</p>
+                <textarea id="example-metadata" readonly rows="15">
+{
+  "recordingId": "12345-67890-abcdef",
+  "service": "Outbound",
+  "agent": "agent_john_doe",
+  "phone": "+15551234567", 
+  "session": "session_abc123",
+  "name": "Jane Smith",
+  "campaign": "Sales_Q4_2024",
+  "termCode": "COMPLETED",
+  "transferConnect": 0,
+  "clientId": 1001,
+  "callCenterId": 501,
+  "serviceId": 301,
+  "agentId": 2001,
+  "campaignId": 401,
+  "duration": 180,
+  "sessionId": "sess_789xyz",
+  "account": "NRA_Account",
+  "transactionId": "txn_456def",
+  "areaCodeState": "VA",
+  "zipCodeState": "Virginia",
+  "campaignType": "Outbound",
+  "zipCode": "22030",
+  "lvResult": "SALE",
+  "agent_department": "Sales",
+  "agent_sub_role": "Senior_Sales",
+  "queue_name": "High_Priority_Sales",
+  "skill_groups": ["English", "Sales", "Premium"],
+  "shift": "Day",
+  "team": "East_Coast",
+  "language": "English"
+}</textarea>
+            </div>
+
+            <!-- Rule Builder Panel -->
+            <div class="panel">
+                <h2>Rule Builder</h2>
+                <p class="help-text">Build conditional logic for unit mapping</p>
+                
+                <div class="rule-config">
+                    <div class="form-group">
+                        <label for="default-unit">Default Unit ID:</label>
+                        <input type="text" id="default-unit" value="nra-default-unit" placeholder="Default unit when no rules match">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="rule-version">Rule Version:</label>
+                        <input type="text" id="rule-version" value="1.0" placeholder="Version identifier">
+                    </div>
+                </div>
+
+                <div id="rules-container">
+                    <h3>Rules <button id="add-rule-btn" class="btn btn-small">+ Add Rule</button></h3>
+                    <div id="rules-list">
+                        <!-- Rules will be added here dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- JSON Output Panel -->
+            <div class="panel">
+                <h2>Generated JSON Configuration</h2>
+                <p class="help-text">AppConfig-ready rule configuration</p>
+                <textarea id="json-output" readonly rows="20" placeholder="JSON configuration will appear here..."></textarea>
+                <div class="json-actions">
+                    <button id="copy-json-btn" class="btn">Copy JSON</button>
+                    <button id="validate-json-btn" class="btn">Validate</button>
+                </div>
+            </div>
+
+            <!-- Sandbox Testing Panel -->
+            <div class="panel">
+                <h2>Rule Testing Sandbox</h2>
+                <p class="help-text">Test your rules against sample metadata</p>
+                
+                <div class="sandbox-input">
+                    <label for="test-metadata">Test Metadata JSON:</label>
+                    <textarea id="test-metadata" rows="8" placeholder="Paste test metadata JSON here..."></textarea>
+                </div>
+                
+                <div class="sandbox-actions">
+                    <button id="test-rules-btn" class="btn">Test Rules</button>
+                    <button id="use-example-btn" class="btn btn-secondary">Use Example</button>
+                </div>
+                
+                <div id="test-results" class="test-results">
+                    <h4>Test Results:</h4>
+                    <div id="test-output">No tests run yet</div>
+                </div>
+            </div>
+
+            <!-- AppConfig Integration Panel -->
+            <div class="panel">
+                <h2>Deploy to AppConfig</h2>
+                <p class="help-text">Deploy configuration to AWS AppConfig</p>
+                
+                <div class="form-group">
+                    <label for="organization-id">Organization ID:</label>
+                    <input type="text" id="organization-id" value="nra" placeholder="Organization identifier">
+                </div>
+                
+                <div class="deployment-actions">
+                    <button id="update-appconfig-btn" class="btn btn-primary" disabled>
+                        🚀 Update AppConfig
+                    </button>
+                    <span class="disabled-note">(Disabled for demo)</span>
+                </div>
+                
+                <div id="deployment-status" class="deployment-status">
+                    Ready for deployment
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rule Template (Hidden) -->
+    <template id="rule-template">
+        <div class="rule-item" data-rule-id="">
+            <div class="rule-header">
+                <h4>Rule <span class="rule-number"></span></h4>
+                <div class="rule-controls">
+                    <button class="btn btn-small move-up">↑</button>
+                    <button class="btn btn-small move-down">↓</button>
+                    <button class="btn btn-small btn-danger delete-rule">×</button>
+                </div>
+            </div>
+            
+            <div class="rule-content">
+                <div class="form-group">
+                    <label>Rule Name:</label>
+                    <input type="text" class="rule-name" placeholder="Descriptive rule name">
+                </div>
+                
+                <div class="form-group">
+                    <label>Priority:</label>
+                    <input type="number" class="rule-priority" value="100" min="1" max="999">
+                </div>
+                
+                <div class="form-group">
+                    <label>Target Unit ID:</label>
+                    <input type="text" class="rule-unit-id" placeholder="Unit ID when rule matches">
+                </div>
+                
+                <div class="conditions-section">
+                    <h5>Conditions:</h5>
+                    <div class="condition-logic">
+                        <label>Logic Operator:</label>
+                        <select class="condition-operator">
+                            <option value="AND">AND (all conditions must match)</option>
+                            <option value="OR">OR (any condition must match)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="conditions-list">
+                        <!-- Conditions will be added here -->
+                    </div>
+                    
+                    <button class="btn btn-small add-condition">+ Add Condition</button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Condition Template (Hidden) -->
+    <template id="condition-template">
+        <div class="condition-item">
+            <div class="condition-controls">
+                <select class="condition-field">
+                    <option value="">Select field...</option>
+                    <!-- Fields will be populated dynamically from metadata -->
+                </select>
+                
+                <select class="condition-operator-type">
+                    <option value="EQUALS">Equals</option>
+                    <option value="NOT_EQUALS">Not Equals</option>
+                    <option value="IN">In List</option>
+                    <option value="NOT_IN">Not In List</option>
+                    <option value="CONTAINS">Contains</option>
+                    <option value="NOT_CONTAINS">Does Not Contain</option>
+                    <option value="STARTS_WITH">Starts With</option>
+                    <option value="ENDS_WITH">Ends With</option>
+                    <option value="IS_NULL_OR_EMPTY">Is Null/Empty</option>
+                    <option value="IS_NOT_NULL_OR_EMPTY">Is Not Null/Empty</option>
+                    <option value="GREATER_THAN">Greater Than</option>
+                    <option value="LESS_THAN">Less Than</option>
+                    <option value="REGEX_MATCH">Regex Match</option>
+                </select>
+                
+                <input type="text" class="condition-value" placeholder="Value (use comma for lists)">
+                
+                <button class="btn btn-small btn-danger remove-condition">Remove</button>
+            </div>
+        </div>
+    </template>
+
+    <script src="script.js"></script>
+</body>
+</html>
