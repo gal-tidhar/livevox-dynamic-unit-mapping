@@ -2,6 +2,10 @@
 
 A standalone web UI for building and testing dynamic unit mapping rules for LiveVox integrations.
 
+## 🚀 [**Live Demo**](https://gal-tidhar.github.io/livevox-dynamic-unit-mapping/)
+
+**Try the demo now**: [https://gal-tidhar.github.io/livevox-dynamic-unit-mapping/](https://gal-tidhar.github.io/livevox-dynamic-unit-mapping/)
+
 ## Overview
 
 This UI allows business users to configure complex unit mapping rules without code changes. Rules are stored as JSON in AWS AppConfig and evaluated against call/agent metadata to determine the appropriate unit_id.
